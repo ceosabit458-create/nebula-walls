@@ -1,165 +1,235 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nebula Walls - Real Preview</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#0a0a0f;color:#fff;font-family:system-ui;padding-bottom:75px}
-#grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-.card{height:200px;border-radius:18px;overflow:hidden;background:#1a1a23;position:relative;border:1px solid #222;cursor:pointer}
-.card img{width:100%;height:100%;object-fit:cover;display:block}
-.meta{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.9));padding:9px}
-.meta b{font-size:12px;display:block}.meta p{font-size:10px;opacity:.6;margin:2px 0 0}
-.chip{padding:8px 14px;border-radius:20px;border:1px solid #333;background:#16161f;color:#888;margin:4px;font-size:12px;cursor:pointer}
-.chip.active{background:#fff;color:#000}
-#loading{text-align:center;padding:60px 20px;opacity:.7}
-.hidden{display:none!important}
-#preview{position:fixed;inset:0;background:#000;z-index:999;overflow:auto;display:flex;flex-direction:column}
-.preview-phone{width:125px;height:250px;background:#111;border-radius:26px;padding:6px;border:2px solid #333;flex-shrink:0;position:relative;overflow:hidden}
-.preview-phone-bg{width:100%;height:100%;border-radius:18px;background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:space-between;padding:8px}
-</style>
-</head>
-<body>
-<div style="padding:14px;display:flex;gap:10px;align-items:center"><div style="width:40px;height:40px;background:linear-gradient(135deg,#a78bfa,#ec4899);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800">N</div><div><div style="font-weight:800">Nebula Walls</div><div style="font-size:11px;opacity:.5">Real Preview • Secure</div></div></div>
-<div style="padding:0 12px"><input id="searchInput" placeholder="Search..." maxlength="30" style="width:100%;padding:12px 16px;border-radius:24px;border:1px solid #2a2a2a;background:#16161f;color:#fff;outline:none"></div>
-<div id="categoryBar" style="display:flex;overflow:auto;padding:10px 6px"></div>
-<div id="loading">Curating HD walls...</div>
-<div id="empty" class="hidden" style="text-align:center;padding:40px">No walls found</div>
-<div id="grid"></div>
-<div id="preview" class="hidden"></div>
-<script>
-const WALLPAPERS=[
-{t:"Sabit",c:"Boys",p:"my-photo",local:true},
-{t:"Swiss Alps",c:"Switzerland",p:15},
-{t:"Alpine Lake",c:"Switzerland",p:16},
-{t:"Green Valley",c:"Nature",p:1015},
-{t:"Deep Woods",c:"Nature",p:1016},
-{t:"Lake View",c:"Nature",p:1024},
-{t:"Forest Trail",c:"Nature",p:1025},
-{t:"Misty Hill",c:"Nature",p:1020},
-{t:"Black Dog",c:"Wildlife",p:237},
-{t:"Galaxy Spiral",c:"Space",p:1080},
-];
-const CATS=["All","Boys","Nature","Switzerland","Wildlife","Space"];
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080811">
+  <meta name="description" content="Nebula Walls — Discover beautiful wallpapers for your device.">  <title>Nebula Walls</title>  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">  <link rel="stylesheet" href="style.css">
+</head><body>  <header class="topbar">
+    <a class="brand" href="#" aria-label="Nebula Walls Home">
+      <div class="brand-icon" aria-hidden="true">✦</div>
+      <div>
+        <h1>Nebula<span>Walls</span></h1>
+        <p>YOUR SCREEN. YOUR UNIVERSE.</p>
+      </div>
+    </a><button class="icon-button" id="randomBtn" type="button"
+        aria-label="Surprise me" title="Surprise me">⤨</button>
 
-function isSafeId(n){return Number.isInteger(Number(n))&&Number(n)>=0&&Number(n)<=1084;}
-function makeSafeUrl(w,wi,he){
-  if(w.local===true){return w.p==="my-photo"?"my-photo.jpg":"https://picsum.photos/id/15/400/700";}
-  if(!isSafeId(w.p)) return "https://picsum.photos/id/15/400/700";
-  return `https://picsum.photos/id/${Number(w.p)}/${wi}/${he}`;
-}
-function safeText(s){return String(s||"").slice(0,30).replace(/[<>'"`;(){}=\\]/g,"").replace(/javascript:/gi,"").replace(/%0a|%0d|%00/gi,"").trim();}
+  </header>  <main><section class="hero">
+  <div class="hero-content">
+    <span class="eyebrow">✦ YOUR DAILY DOSE OF INSPIRATION</span>
+    <h2>Make your screen<br>feel <span>extraordinary.</span></h2>
+    <p>Discover wallpapers that match your universe.</p>
+  </div>
+  <div class="hero-orb" aria-hidden="true">✧</div>
+</section>
 
-const grid=document.getElementById('grid'),bar=document.getElementById('categoryBar'),loading=document.getElementById('loading'),empty=document.getElementById('empty'),search=document.getElementById('searchInput'),preview=document.getElementById('preview');
-let active="All",query="";
+<section class="search-section">
+  <label class="search-wrap">
+    <span aria-hidden="true">⌕</span>
+    <input id="searchInput" type="search"
+           placeholder="Search wallpapers..."
+           maxlength="80" autocomplete="off"
+           aria-label="Search wallpapers">
 
-function renderCats(){
- bar.replaceChildren();
- CATS.forEach(c=>{
-  const b=document.createElement('button');b.className="chip"+(active===c?" active":"");b.textContent=safeText(c);
-  b.addEventListener('click',()=>{active=c;renderCats();renderGrid();});
-  bar.appendChild(b);
- });
-}
-function getFiltered(){
- const q=safeText(query).toLowerCase().replace(/[^a-z0-9 ]/g,"");
- return WALLPAPERS.filter(w=>{
-  const catOk=active==="All"||w.c===active;
-  if(!q) return catOk;
-  return catOk&&(w.t.toLowerCase().includes(q)||w.c.toLowerCase().includes(q));
- });
-}
-function createCard(w){
- const card=document.createElement('div');card.className="card";
- const img=document.createElement('img');img.src=makeSafeUrl(w,400,700);img.alt=safeText(w.t);img.loading="lazy";
- img.addEventListener('error',()=>{img.src=makeSafeUrl({p:15},400,700);});
- const meta=document.createElement('div');meta.className="meta";
- const b=document.createElement('b');b.textContent=safeText(w.t);
- const p=document.createElement('p');p.textContent=safeText(w.c)+" • Nebula";
- meta.append(b,p);card.append(img,meta);
- card.addEventListener('click',()=>openPreview(w));
- return card;
-}
-function renderGrid(){
- const list=getFiltered();grid.replaceChildren();
- if(list.length===0){empty.classList.remove('hidden');grid.classList.add('hidden');loading.classList.add('hidden');return;}
- empty.classList.add('hidden');grid.classList.remove('hidden');loading.classList.add('hidden');
- const frag=document.createDocumentFragment();list.forEach(w=>frag.appendChild(createCard(w)));grid.appendChild(frag);
-}
+    <button id="clearSearch" type="button"
+            class="clear-search hidden"
+            aria-label="Clear search">×</button>
+  </label>
 
-// ===== REAL PHONE PREVIEW WITH APPS + SEARCH =====
-function createRealPhone(url, position){
-  const phone=document.createElement('div');phone.className="preview-phone";
-  const bg=document.createElement('div');bg.className="preview-phone-bg";
-  try{bg.style.backgroundImage=`url("${url}")`;}catch(e){bg.style.backgroundImage=`url("https://picsum.photos/id/15/400/700")`;}
-  bg.style.backgroundPosition=position;
+  <div class="color-row" aria-label="Filter by color">
+    <button class="color-chip active" type="button" data-color="all">All</button>
+    <button class="color-chip" type="button" data-color="black">● Black</button>
+    <button class="color-chip" type="button" data-color="blue">● Blue</button>
+    <button class="color-chip" type="button" data-color="purple">● Purple</button>
+    <button class="color-chip" type="button" data-color="red">● Red</button>
+    <button class="color-chip" type="button" data-color="green">● Green</button>
+    <button class="color-chip" type="button" data-color="white">● White</button>
+  </div>
+</section>
 
-  // Top - Time
-  const top=document.createElement('div');
-  top.innerHTML=`<div style="text-align:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8)"><div style="font-size:16px;font-weight:700">02:36</div><div style="font-size:7px;opacity:.8">Tuesday, May 13</div></div>`;
-
-  // Middle - Search Bar
-  const middle=document.createElement('div');
-  middle.innerHTML=`<div style="background:rgba(255,255,255,0.85);border-radius:10px;padding:4px 6px;display:flex;align-items:center;gap:3px;margin-top:20px"><div style="width:10px;height:10px;background:#ccc;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:6px">🔍</div><div style="font-size:6px;color:#333">Search</div><div style="margin-left:auto;width:12px;height:12px;background:#ff3b30;border-radius:50%"></div></div>`;
-
-  // Bottom - Apps + Dock
-  const bottom=document.createElement('div');
-  bottom.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:6px">
-      <div style="width:20px;height:20px;background:linear-gradient(135deg,#4ade80,#22c55e);border-radius:5px"></div>
-      <div style="width:20px;height:20px;background:linear-gradient(135deg,#60a5fa,#3b82f6);border-radius:5px"></div>
-      <div style="width:20px;height:20px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:5px"></div>
-      <div style="width:20px;height:20px;background:linear-gradient(135deg,#f87171,#ef4444);border-radius:5px"></div>
-      <div style="width:20px;height:20px;background:linear-gradient(135deg,#a78bfa,#8b5cf6);border-radius:5px"></div>
-      <div style="width:20px;height:20px;background:linear-gradient(135deg,#34d399,#10b981);border-radius:5px"></div>
-      <div style="width:20px;height:20px;background:linear-gradient(135deg,#fb7185,#f43f5e);border-radius:5px"></div>
-      <div style="width:20px;height:20px;background:linear-gradient(135deg,#38bdf8,#0ea5e9);border-radius:5px"></div>
+<section class="section">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">EXPLORE</span>
+      <h2>Collections</h2>
     </div>
-    <div style="background:rgba(255,255,255,0.8);border-radius:10px;padding:3px;display:flex;justify-content:space-around">
-      <div style="width:18px;height:18px;background:#4ade80;border-radius:4px"></div>
-      <div style="width:18px;height:18px;background:#60a5fa;border-radius:4px"></div>
-      <div style="width:18px;height:18px;background:#fbbf24;border-radius:4px"></div>
-      <div style="width:18px;height:18px;background:#a78bfa;border-radius:4px"></div>
+  </div>
+
+  <div class="category-row" id="categoryBar"></div>
+</section>
+
+<section class="featured-section">
+  <div class="featured-heading">
+    <div>
+      <span class="eyebrow">HANDPICKED FOR YOU</span>
+      <h2>Wallpaper of the Day</h2>
     </div>
-  `;
+    <span class="live-badge">DAILY ✦</span>
+  </div>
 
-  bg.append(top,middle,bottom);
-  phone.appendChild(bg);
-  return phone;
-}
+  <button class="featured-card" id="dailyWallpaper" type="button"
+          aria-label="Open wallpaper of the day">
+    <div class="featured-image" id="dailyImage"></div>
+    <div class="featured-overlay">
+      <span>DAILY DISCOVERY</span>
+      <h3 id="dailyTitle">Discover something beautiful</h3>
+      <p>Tap to explore ↗</p>
+    </div>
+  </button>
+</section>
 
-function openPreview(w){
- const url=makeSafeUrl(w,1080,1920);
- const thumb=makeSafeUrl(w,400,700);
- const title=safeText(w.t), cat=safeText(w.c);
- preview.replaceChildren();
- const bg=document.createElement('div');bg.style.position="fixed";bg.style.inset="0";bg.style.backgroundColor="#000";
- try{bg.style.backgroundImage=`url("${thumb}")`;}catch(e){bg.style.backgroundImage=`url("https://picsum.photos/id/15/400/700")`;}
- bg.style.backgroundPosition="center";bg.style.backgroundSize="cover";bg.style.filter="blur(30px) brightness(0.25)";
- preview.appendChild(bg);
+<section class="section">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow" id="sectionEyebrow">CURATED FOR YOU</span>
+      <h2 id="sectionTitle">Explore Wallpapers</h2>
+    </div>
 
- const top=document.createElement('div');top.style.cssText="display:flex;justify-content:flex-end;padding:16px;position:relative;z-index:2";
- const close=document.createElement('button');close.textContent="✕";close.style.cssText="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:18px;cursor:pointer";
- close.addEventListener('click',()=>preview.classList.add('hidden'));
- top.appendChild(close);preview.appendChild(top);
- 
- const previewBox=document.createElement('div');previewBox.style.cssText="display:flex;gap:10px;overflow:auto;padding:10px 16px;position:relative;z-index:2";
- previewBox.append(createRealPhone(url,"center top"),createRealPhone(url,"center center"),createRealPhone(url,"center bottom"));
- preview.appendChild(previewBox);
+    <button class="text-button" id="sortBtn" type="button">
+      Latest ↕
+    </button>
+  </div>
 
- const bottom=document.createElement('div');bottom.style.cssText="background:#0f0f0f;padding:18px;border-radius:24px 24px 0 0;position:relative;z-index:2;margin-top:auto";
- const h3=document.createElement('h3');h3.textContent=title;h3.style.margin="0";h3.style.color="#fff";
- const p=document.createElement('p');p.textContent=cat+" • Nebula • Real Apps Preview • Secure";p.style.color="#888";p.style.fontSize="13px";
- const row=document.createElement('div');row.style.cssText="display:flex;gap:10px;margin-top:12px";
- const dl=document.createElement('button');dl.textContent="Download HD";dl.style.cssText="flex:1;padding:16px;background:#fff;color:#000;border:none;border-radius:14px;font-weight:700;cursor:pointer";
- dl.addEventListener('click',()=>{const a=document.createElement('a');a.href=url;a.download=title+".jpg";document.body.appendChild(a);a.click();a.remove();});
- const setBtn=document.createElement('button');setBtn.textContent="Set Wallpaper";setBtn.style.cssText="flex:1;padding:16px;background:#a78bfa;color:#fff;border:none;border-radius:14px;font-weight:700;cursor:pointer";
- setBtn.addEventListener('click',()=>{if(window.Android&&window.Android.setWallpaper){window.Android.setWallpaper(url);}else{dl.click();}});
- row.append(setBtn,dl);bottom.append(h3,p,row);preview.appendChild(bottom);
- preview.classList.remove('hidden');
-}
-search.addEventListener('input',()=>{query=safeText(search.value);renderGrid();});
-renderCats();renderGrid();
-</script>
-</body>
-</html>
+  <div class="stats-row">
+    <span id="resultCount">Loading wallpapers...</span>
+    <button id="randomInlineBtn" class="text-button" type="button">
+      Surprise me ✦
+    </button>
+  </div>
+
+  <div id="loading" class="state hidden" role="status">
+    Loading your universe...
+  </div>
+
+  <div id="empty" class="state hidden">
+    <div class="empty-icon" aria-hidden="true">✧</div>
+    <h3>No wallpapers found</h3>
+    <p>Try another search or collection.</p>
+    <button id="resetBtn" class="primary-button" type="button">
+      Explore all
+    </button>
+  </div>
+
+  <div id="grid" class="wallpaper-grid"></div>
+
+  <button id="loadMoreBtn" class="load-more hidden" type="button">
+    Show more wallpapers
+  </button>
+</section>
+
+<!-- Reserved banner-ad area. Configure an official ad network separately. -->
+<div id="bannerAd" class="ad-container" aria-label="Advertisement">
+  <span>ADVERTISEMENT</span>
+  <p>Banner ad placement</p>
+</div>
+
+  </main>  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="nav-item active" type="button" data-tab="home">
+      <span aria-hidden="true">⌂</span><small>Home</small>
+    </button><button class="nav-item" type="button" data-tab="explore">
+  <span aria-hidden="true">◈</span><small>Explore</small>
+</button>
+
+<button class="nav-item" type="button" data-tab="favorites">
+  <span aria-hidden="true">♡</span><small>Favorites</small>
+</button>
+
+<button class="nav-item" type="button" data-tab="downloads">
+  <span aria-hidden="true">⇩</span><small>Downloads</small>
+</button>
+
+<button class="nav-item" type="button" data-tab="profile">
+  <span aria-hidden="true">☻</span><small>Library</small>
+</button>
+
+  </nav>  <!-- Wallpaper preview dialog -->  <section id="preview" class="preview hidden"
+           role="dialog" aria-modal="true"
+           aria-label="Wallpaper preview"><header class="preview-header">
+  <button id="closePreview" class="icon-button" type="button"
+          aria-label="Close preview">←</button>
+
+  <div>
+    <strong id="previewTitle">Wallpaper</strong>
+    <p id="previewCategory">Collection</p>
+  </div>
+
+  <button id="shareBtn" class="icon-button" type="button"
+          aria-label="Share wallpaper">↗</button>
+</header>
+
+<div class="preview-stage">
+  <div id="phoneFrame" class="phone-frame">
+    <div id="phoneWallpaper" class="phone-wallpaper"></div>
+
+    <div class="phone-status">
+      <span>9:41</span>
+      <span aria-label="Signal and battery">●●● ▰</span>
+    </div>
+
+    <div class="phone-clock">
+      <div id="previewClock">9:41</div>
+      <p id="previewDate">MONDAY, OCTOBER 23</p>
+    </div>
+
+    <div class="phone-dock" aria-label="Home screen app icons">
+      <span aria-hidden="true">●</span>
+      <span aria-hidden="true">●</span>
+      <span aria-hidden="true">●</span>
+      <span aria-hidden="true">●</span>
+    </div>
+  </div>
+</div>
+
+<!-- Three preview modes for the same wallpaper -->
+<div class="preview-controls" role="group"
+     aria-label="Choose wallpaper preview mode">
+
+  <button type="button"
+          class="preview-mode-btn active"
+          data-preview-mode="lockscreen"
+          aria-pressed="true">
+    🔒 Lock Screen
+  </button>
+
+  <button type="button"
+          class="preview-mode-btn"
+          data-preview-mode="homescreen"
+          aria-pressed="false">
+    🏠 Home Screen
+  </button>
+
+  <button type="button"
+          class="preview-mode-btn"
+          data-preview-mode="fullscreen"
+          aria-pressed="false">
+    ⛶ Full Screen
+  </button>
+</div>
+
+<div class="preview-info">
+  <div>
+    <span class="eyebrow">WALLPAPER DETAILS</span>
+    <h3 id="previewName">Wallpaper</h3>
+    <p id="previewResolution">Resolution depends on source image</p>
+  </div>
+
+  <button id="favoriteBtn" class="icon-button favorite-large"
+          type="button" aria-label="Add to favorites">♡</button>
+</div>
+
+<div class="preview-actions">
+  <button id="downloadBtn" class="primary-button" type="button">
+    ⇩ Download
+  </button>
+
+  <button id="setWallpaperBtn" class="secondary-button" type="button">
+    Set Wallpaper
+  </button>
+</div>
+
+<p id="previewMessage" class="preview-message" aria-live="polite"></p>
+
+  </section>  <div id="toast" class="toast" role="status" aria-live="polite"></div>  <script src="script.js" defer></script></body>
+                                     </html>
